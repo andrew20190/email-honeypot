@@ -1,0 +1,31 @@
+version: "3"
+services:
+  maildb:
+    image: mariadb
+    networks:
+      - email
+    environment: 
+      MARIADB_ROOT_PASSWORD: ${MARIADB_ROOT_PASSWORD}
+    volumes:
+      - ./db_storage:/var/lib/mysql
+    
+  mailbase:
+    image: mailbase
+    build: ./mailbase/
+    networks:
+      - email
+    environment: 
+      MARIADB_ROOT_PASSWORD: ${MARIADB_ROOT_PASSWORD}
+
+  dbinit:
+    image: mariadb
+    networks:
+      - email
+    volumes: 
+      - ./prep.sql:/prep.sql
+    environment: 
+      MARIADB_ROOT_PASSWORD: ${MARIADB_ROOT_PASSWORD}
+    command: bash -c "(echo DB init; sleep 5; mysql -uroot -p\$MARIADB_ROOT_PASSWORD -h maildb < /prep.sql ; echo Init script run)"
+
+networks:
+  email:
